@@ -11,6 +11,7 @@ com\mycompany\blackjack3\BlackjackGUI$TransparentPanel.class
 com\mycompany\blackjack3\GameHistory.class
 com\mycompany\blackjack3\Cola.class
 com\mycompany\blackjack3\BlackjackGUI$MainMenuPanel.class
+com\mycompany\blackjack3\BlackjackGUI$MenuBackgroundPanel.class
 com\mycompany\blackjack3\BlackjackGUI$BackgroundPanel.class
 com\mycompany\blackjack3\BlackjackGUI$GameController$Resultado.class
 com\mycompany\blackjack3\Hand.class
@@ -27,5 +28,6 @@ com\mycompany\blackjack3\ListaDoble.class
 com\mycompany\blackjack3\ColaPrioridad.class
 com\mycompany\blackjack3\ListaCircularSimple.class
 com\mycompany\blackjack3\BlackjackGUI$GamePanel.class
+com\mycompany\blackjack3\BlackjackGUI$TransparentField.class
 com\mycompany\blackjack3\Nodo.class
 com\mycompany\blackjack3\ProcesadorCadenas.class

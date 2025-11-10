@@ -193,7 +193,7 @@ public class BlackJack3 {
             turnos.agregar(jugador);
         }
         
-        Jugador dealer = new Jugador("Crupier", 0);
+        Jugador dealer = new Jugador("Máquina", 0);
         GameHistory history = new GameHistory();
         
         boolean jugarMas = true;
@@ -210,7 +210,7 @@ public class BlackJack3 {
             deck.shuffle();
             
             // Reiniciar manos
-            dealer.setMano(new Hand("Crupier"));
+            dealer.setMano(new Hand("Máquina"));
             for (Jugador jugador : jugadores) {
                 if (jugador.isActivo()) {
                     jugador.setMano(new Hand(jugador.getNombre()));
@@ -282,7 +282,7 @@ public class BlackJack3 {
                 }
             }
             
-            // Turno del crupier
+            // Turno del máquina
             List<Jugador> jugadoresActivos = new ArrayList<>();
             for (Jugador j : jugadores) {
                 if (j.isActivo() && j.getMano().getValue() <= 21) {
@@ -292,7 +292,7 @@ public class BlackJack3 {
             
             if (!jugadoresActivos.isEmpty()) {
                 System.out.println("\n" + "─".repeat(60));
-                System.out.println("    Turno del Crupier");
+                System.out.println("    Turno del Máquina");
                 System.out.println("─".repeat(60));
                 
                 dealer.getMano().display(false);
@@ -300,14 +300,14 @@ public class BlackJack3 {
                 
                 while (dealer.getMano().getValue() < 17) {
                     pausa(1000);
-                    System.out.println("\nEl crupier pide carta...");
+                    System.out.println("\nEl máquina pide carta...");
                     dealer.getMano().addCard(deck.dealCard());
                     dealer.getMano().display(false);
                     System.out.println("Puntos: " + dealer.getMano().getValue());
                 }
                 
                 if (dealer.getMano().getValue() > 21) {
-                    System.out.println("\n💥 ¡El crupier se pasó con " + 
+                    System.out.println("\n💥 ¡El máquina se pasó con " + 
                         dealer.getMano().getValue() + " puntos!");
                 }
             }
@@ -351,7 +351,7 @@ public class BlackJack3 {
             }
             
             // Mostrar resultados ordenados
-            System.out.println("\nCrupier: " + dealerValue + " puntos");
+            System.out.println("\nMáquina: " + dealerValue + " puntos");
             System.out.println("\n" + "─".repeat(60));
             
             int posicion = 1;
@@ -376,7 +376,7 @@ public class BlackJack3 {
             }
             
             // Agregar al historial
-            history.addGame("Ronda " + ronda + " - Crupier: " + dealerValue);
+            history.addGame("Ronda " + ronda + " - Máquina: " + dealerValue);
             
             // Mostrar estadísticas
             System.out.println("\n" + "═".repeat(60));

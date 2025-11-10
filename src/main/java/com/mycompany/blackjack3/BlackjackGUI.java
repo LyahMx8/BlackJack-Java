@@ -9,8 +9,6 @@ import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.RenderingHints;
 import java.io.IOException;
@@ -23,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -42,17 +41,14 @@ import javax.swing.Timer;
 /**
  * Interfaz gráfica para el juego de Blackjack utilizando las estructuras y modelos existentes.
  * - Soporta 1 a 3 jugadores.
- * - Muestra manos de jugadores y crupier con cartas dibujadas (y oculta la segunda carta del crupier hasta su turno).
- * - Flujo: nueva partida → repartir → turnos jugador → turno crupier → resultados → nueva ronda.
+ * - Muestra manos de jugadores y máquina con cartas dibujadas (y oculta la segunda carta del máquina hasta su turno).
+ * - Flujo: nueva partida → repartir → turnos jugador → turno máquina → resultados → nueva ronda.
  * - Si existen imágenes de cartas en la carpeta de imágenes, intenta usarlas; de lo contrario, dibuja las cartas.
  */
 public class BlackjackGUI extends JFrame {
 
     private static final Path[] IMAGE_BASES = new Path[] {
         Paths.get("src", "main", "java", "com", "mycompany", "blackjack3", "src", "images"),
-        Paths.get("src", "images"),
-        Paths.get("images"),
-        Paths.get("D:", "Disco", "Cursos", "UCompensar Estructuras de datos", "BlackJack", "src", "main", "java", "com", "mycompany", "blackjack3", "src", "images")
     };
 
     // Navegación entre pantallas
@@ -100,49 +96,54 @@ public class BlackjackGUI extends JFrame {
         rootPanel.repaint();
     }
 
-    // Panel: Menú principal
+    // Panel: Menú principal con portada
     private class MainMenuPanel extends JPanel {
         MainMenuPanel() {
-            setLayout(new GridBagLayout());
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            gbc.anchor = GridBagConstraints.CENTER;
+            setLayout(new BorderLayout());
 
-            JPanel card = new JPanel();
-            card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-            card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(24, 24, 24, 24),
-                BorderFactory.createLineBorder(new Color(30, 30, 30), 1)
-            ));
-            card.setBackground(new Color(245, 245, 245));
+            MenuBackgroundPanel cover = new MenuBackgroundPanel();
+            cover.setLayout(new BorderLayout());
 
-            JLabel title = new JLabel("Blackjack", SwingConstants.CENTER);
-            title.setAlignmentX(CENTER_ALIGNMENT);
-            title.setFont(new Font("SansSerif", Font.BOLD, 36));
-            title.setBorder(BorderFactory.createEmptyBorder(8, 8, 16, 8));
+            // Columna izquierda con título y botones
+            JPanel leftCol = new TransparentPanel();
+            leftCol.setLayout(new BoxLayout(leftCol, BoxLayout.Y_AXIS));
+            leftCol.setBorder(BorderFactory.createEmptyBorder(80, 60, 80, 60));
 
-            JButton btnDemo = new JButton("1. Ver demostración de estructuras");
-            btnDemo.setAlignmentX(CENTER_ALIGNMENT);
+            JLabel title = new JLabel("Blackjack", SwingConstants.LEFT);
+            title.setAlignmentX(LEFT_ALIGNMENT);
+            title.setFont(new Font("SansSerif", Font.BOLD, 42));
+            title.setForeground(Color.WHITE);
+
+            JLabel subtitle = new JLabel("Estructuras de Datos", SwingConstants.LEFT);
+            subtitle.setAlignmentX(LEFT_ALIGNMENT);
+            subtitle.setFont(new Font("SansSerif", Font.PLAIN, 18));
+            subtitle.setForeground(new Color(220, 220, 220));
+
+            leftCol.add(title);
+            leftCol.add(Box.createRigidArea(new Dimension(0, 8)));
+            leftCol.add(subtitle);
+            leftCol.add(Box.createRigidArea(new Dimension(0, 24)));
+
+            JButton btnDemo = new RoundButton("Ver demostración de estructuras", new Color(33, 150, 243));
+            btnDemo.setAlignmentX(LEFT_ALIGNMENT);
             btnDemo.addActionListener(e -> showDemo());
 
-            JButton btnNewGame = new JButton("2. Jugar Blackjack Multijugador (GUI)");
-            btnNewGame.setAlignmentX(CENTER_ALIGNMENT);
+            JButton btnNewGame = new RoundButton("Jugar Blackjack Multijugador (GUI)", new Color(76, 175, 80));
+            btnNewGame.setAlignmentX(LEFT_ALIGNMENT);
             btnNewGame.addActionListener(e -> showNewGame());
 
-            JButton btnExit = new JButton("Salir");
-            btnExit.setAlignmentX(CENTER_ALIGNMENT);
+            JButton btnExit = new RoundButton("Salir", new Color(244, 67, 54));
+            btnExit.setAlignmentX(LEFT_ALIGNMENT);
             btnExit.addActionListener(e -> System.exit(0));
 
-            card.add(title);
-            card.add(Box.createRigidArea(new Dimension(0, 12)));
-            card.add(btnDemo);
-            card.add(Box.createRigidArea(new Dimension(0, 8)));
-            card.add(btnNewGame);
-            card.add(Box.createRigidArea(new Dimension(0, 8)));
-            card.add(btnExit);
+            leftCol.add(btnDemo);
+            leftCol.add(Box.createRigidArea(new Dimension(0, 10)));
+            leftCol.add(btnNewGame);
+            leftCol.add(Box.createRigidArea(new Dimension(0, 10)));
+            leftCol.add(btnExit);
 
-            add(card, gbc);
+            cover.add(leftCol, BorderLayout.WEST);
+            add(cover, BorderLayout.CENTER);
         }
     }
 
@@ -234,39 +235,49 @@ public class BlackjackGUI extends JFrame {
         }
     }
 
-    // Panel: Nueva partida (configurar jugadores)
+    // Panel: Nueva partida (configurar jugadores) con estilo moderno
     private class NewGamePanel extends JPanel {
         private final JComboBox<Integer> playersCombo = new JComboBox<>(new Integer[]{1, 2, 3});
         private final JLabel lbl1 = new JLabel("Jugador 1:");
         private final JLabel lbl2 = new JLabel("Jugador 2:");
         private final JLabel lbl3 = new JLabel("Jugador 3:");
-        private final JTextField name1 = new JTextField("Jugador 1", 16);
-        private final JTextField name2 = new JTextField("Jugador 2", 16);
-        private final JTextField name3 = new JTextField("Jugador 3", 16);
-        private final JPanel namesPanel = new JPanel(new GridLayout(3, 2, 8, 8));
+        private final JTextField name1 = new TransparentField("Jugador 1");
+        private final JTextField name2 = new TransparentField("Jugador 2");
+        private final JTextField name3 = new TransparentField("Jugador 3");
+        private final JPanel namesPanel = new TransparentPanel(new GridLayout(3, 2, 10, 10));
 
         NewGamePanel() {
-            setLayout(new GridBagLayout());
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            gbc.anchor = GridBagConstraints.CENTER;
+            setLayout(new BorderLayout());
+            setOpaque(false);
 
-            JPanel card = new JPanel();
-            card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-            card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(24, 24, 24, 24),
-                BorderFactory.createLineBorder(new Color(30, 30, 30), 1)
-            ));
-            card.setBackground(new Color(245, 245, 245));
+            // Columna central
+            TransparentPanel center = new TransparentPanel();
+            center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
+            center.setBorder(BorderFactory.createEmptyBorder(60, 80, 60, 80));
 
-            JLabel title = new JLabel("Nueva Partida", SwingConstants.CENTER);
-            title.setAlignmentX(CENTER_ALIGNMENT);
-            title.setFont(new Font("SansSerif", Font.BOLD, 28));
+            JLabel title = new JLabel("Nueva Partida", SwingConstants.LEFT);
+            title.setAlignmentX(LEFT_ALIGNMENT);
+            title.setFont(new Font("SansSerif", Font.BOLD, 36));
+            title.setForeground(Color.WHITE);
 
-            JPanel playersRow = new JPanel();
-            playersRow.add(new JLabel("Número de jugadores:"));
+            JLabel subtitle = new JLabel("Configura jugadores y comienza la partida", SwingConstants.LEFT);
+            subtitle.setAlignmentX(LEFT_ALIGNMENT);
+            subtitle.setFont(new Font("SansSerif", Font.PLAIN, 16));
+            subtitle.setForeground(new Color(220, 220, 220));
+
+            TransparentPanel playersRow = new TransparentPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+            JLabel lblPlayers = new JLabel("Número de jugadores:");
+            lblPlayers.setForeground(Color.WHITE);
+            playersCombo.setForeground(Color.WHITE);
+            playersCombo.setBackground(new Color(0, 0, 0, 120));
+            playersCombo.setOpaque(false);
+            playersRow.add(lblPlayers);
             playersRow.add(playersCombo);
+
+            // Etiquetas blancas
+            lbl1.setForeground(Color.WHITE);
+            lbl2.setForeground(Color.WHITE);
+            lbl3.setForeground(Color.WHITE);
 
             namesPanel.add(lbl1);
             namesPanel.add(name1);
@@ -275,37 +286,40 @@ public class BlackjackGUI extends JFrame {
             namesPanel.add(lbl3);
             namesPanel.add(name3);
 
-            JButton btnBack = new JButton("Volver");
+            TransparentPanel actions = new TransparentPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+            JButton btnBack = new RoundButton("Volver", new Color(96, 125, 139));
+            JButton btnStart = new RoundButton("Comenzar", new Color(76, 175, 80));
             btnBack.addActionListener(e -> showMainMenu());
-
-            JButton btnStart = new JButton("Comenzar");
             btnStart.addActionListener(e -> {
                 int n = Objects.requireNonNull((Integer) playersCombo.getSelectedItem());
                 List<String> nombres = new ArrayList<>();
                 if (n >= 1) nombres.add(ProcesadorCadenas.capitalizarPalabras(name1.getText().trim().isEmpty() ? "Jugador 1" : name1.getText()));
                 if (n >= 2) nombres.add(ProcesadorCadenas.capitalizarPalabras(name2.getText().trim().isEmpty() ? "Jugador 2" : name2.getText()));
                 if (n >= 3) nombres.add(ProcesadorCadenas.capitalizarPalabras(name3.getText().trim().isEmpty() ? "Jugador 3" : name3.getText()));
-
                 gamePanel.controller.startNewGame(nombres);
                 showGame();
             });
-
-            JPanel actions = new JPanel();
             actions.add(btnBack);
             actions.add(btnStart);
 
             playersCombo.addActionListener(e -> updateNameFieldsVisibility());
             updateNameFieldsVisibility();
 
-            card.add(title);
-            card.add(Box.createRigidArea(new Dimension(0, 12)));
-            card.add(playersRow);
-            card.add(Box.createRigidArea(new Dimension(0, 12)));
-            card.add(namesPanel);
-            card.add(Box.createRigidArea(new Dimension(0, 12)));
-            card.add(actions);
+            center.add(title);
+            center.add(Box.createRigidArea(new Dimension(0, 8)));
+            center.add(subtitle);
+            center.add(Box.createRigidArea(new Dimension(0, 20)));
+            center.add(playersRow);
+            center.add(Box.createRigidArea(new Dimension(0, 16)));
+            center.add(namesPanel);
+            center.add(Box.createRigidArea(new Dimension(0, 16)));
+            center.add(actions);
 
-            add(card, gbc);
+            // Fondo de portada también para esta pantalla
+            MenuBackgroundPanel cover = new MenuBackgroundPanel();
+            cover.setLayout(new BorderLayout());
+            cover.add(center, BorderLayout.WEST);
+            add(cover, BorderLayout.CENTER);
         }
 
         private void updateNameFieldsVisibility() {
@@ -427,7 +441,7 @@ public class BlackjackGUI extends JFrame {
 
             String turno = controller.isPlayersPhase()
                 ? "Turno de: " + controller.players.get(controller.currentPlayerIndex).getNombre()
-                : (controller.roundActive ? "Turno del crupier..." : "Ronda finalizada.");
+                : (controller.roundActive ? "Turno del máquina..." : "Ronda finalizada.");
             int restantes = controller.getDeckRemaining();
             int ronda = controller.getRonda();
             statusBar.setText("Ronda " + ronda + " | " + turno + " | Cartas restantes en mazo: " + restantes);
@@ -448,7 +462,7 @@ public class BlackjackGUI extends JFrame {
     private static class GameController {
         private final GamePanel ui;
         private List<Jugador> players = new ArrayList<>();
-        private Jugador dealer = new Jugador("Crupier", 0);
+        private Jugador dealer = new Jugador("Máquina", 0);
         private Deck deck;
         private int currentPlayerIndex = 0;
         private boolean roundActive = false;
@@ -486,7 +500,7 @@ public class BlackjackGUI extends JFrame {
             ronda++;
             deck = new Deck();
             deck.shuffle();
-            dealer.setMano(new Hand("Crupier"));
+            dealer.setMano(new Hand("Máquina"));
             for (Jugador j : players) {
                 j.setMano(new Hand(j.getNombre()));
                 j.setActivo(true);
@@ -572,7 +586,7 @@ public class BlackjackGUI extends JFrame {
             dealerHideSecond = false;
             ui.render();
 
-            // Animar pequeñas pausas al pedir cartas del crupier
+            // Animar pequeñas pausas al pedir cartas del máquina
             Timer t = new Timer(700, e -> {
                 if (dealer.getMano().getValue() < 17) {
                     dealer.getMano().addCard(deck.dealCard());
@@ -591,7 +605,7 @@ public class BlackjackGUI extends JFrame {
             boolean dealerBusted = dealerValue > 21;
 
             ColaPrioridad<Resultado> resultados = new ColaPrioridad<>();
-            StringBuilder resumen = new StringBuilder("Crupier: " + dealerValue + " puntos\n");
+            StringBuilder resumen = new StringBuilder("Máquina: " + dealerValue + " puntos\n");
 
             for (Jugador j : players) {
                 int jugadorValue = j.getMano().getValue();
@@ -624,7 +638,7 @@ public class BlackjackGUI extends JFrame {
                     .append(": ").append(r.puntos).append(" pts - ").append(r.resultado).append("\n");
             }
 
-            history.addGame("Ronda " + ronda + " - Crupier: " + dealerValue);
+            history.addGame("Ronda " + ronda + " - Máquina: " + dealerValue);
             roundActive = false;
             ui.updateButtonsState(false, false, true);
             ui.render();
@@ -761,6 +775,11 @@ public class BlackjackGUI extends JFrame {
 
     // Panel totalmente transparente (no pinta fondo aunque el LAF lo intente)
     private static class TransparentPanel extends JPanel {
+        TransparentPanel() {
+            super();
+            setOpaque(false);
+            setBorder(BorderFactory.createEmptyBorder());
+        }
         TransparentPanel(java.awt.LayoutManager layout) {
             super(layout);
             setOpaque(false);
@@ -946,44 +965,56 @@ public class BlackjackGUI extends JFrame {
     // Botón redondeado con estilo moderno
     private static class RoundButton extends JButton {
         private final Color base;
-        private final Color hover;
-        private final Color press;
-        private Color current;
         private final int radius = 14;
 
         RoundButton(String text, Color base) {
             super(text);
             this.base = base;
-            this.hover = base.brighter();
-            this.press = base.darker();
-            this.current = base;
             setFocusPainted(false);
             setForeground(Color.WHITE);
             setBorder(BorderFactory.createEmptyBorder(8, 14, 8, 14));
             setContentAreaFilled(false);
             setOpaque(false);
             setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-
-            addChangeListener(e -> {
-                if (getModel().isArmed() || getModel().isPressed()) {
-                    current = press;
-                } else if (getModel().isRollover()) {
-                    current = hover;
-                } else {
-                    current = base;
-                }
-                repaint();
-            });
         }
 
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(new Color(0, 0, 0, 40));
-            g2.fillRoundRect(2, 4, getWidth() - 4, getHeight() - 4, radius + 2, radius + 2);
-            g2.setColor(current);
-            g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
+
+            // Borde y texto con el color asignado al botón (sin fondo)
+            Color outline = isEnabled() ? base : base.darker();
+            Color text = outline;
+            setForeground(text);
+
+            // Fondo transparente: solo dibujar contorno
+            g2.setStroke(new BasicStroke(2.2f));
+            g2.setColor(outline);
+            g2.drawRoundRect(1, 1, getWidth() - 2, getHeight() - 2, radius, radius);
+
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    // Campo de texto con fondo translúcido y bordes redondeados
+    private static class TransparentField extends JTextField {
+        TransparentField(String text) {
+            super(text, 16);
+            setOpaque(false);
+            setForeground(Color.WHITE);
+            setCaretColor(Color.WHITE);
+            setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(new Color(0, 0, 0, 120));
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+            g2.setColor(new Color(255, 255, 255, 60));
+            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
             g2.dispose();
             super.paintComponent(g);
         }
@@ -1041,6 +1072,60 @@ public class BlackjackGUI extends JFrame {
                 }
             }
             return null;
+        }
+    }
+
+    // Portada específica del menú principal
+    private static class MenuBackgroundPanel extends JPanel {
+        private static java.awt.Image MENU_BG = null;
+        private static boolean TRIED = false;
+
+        MenuBackgroundPanel() {
+            setOpaque(true);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            java.awt.Image img = loadMenuBg();
+            if (img != null) {
+                int w = getWidth();
+                int h = getHeight();
+                int iw = img.getWidth(null);
+                int ih = img.getHeight(null);
+                if (iw > 0 && ih > 0) {
+                    double scale = Math.max((double) w / iw, (double) h / ih);
+                    int dw = (int) (iw * scale);
+                    int dh = (int) (ih * scale);
+                    int dx = (w - dw) / 2;
+                    int dy = (h - dh) / 2;
+                    g.drawImage(img, dx, dy, dw, dh, null);
+                } else {
+                    g.drawImage(img, 0, 0, w, h, null);
+                }
+            } else {
+                g.setColor(new Color(34, 80, 56));
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
+        }
+
+        private static java.awt.Image loadMenuBg() {
+            if (TRIED) return MENU_BG;
+            TRIED = true;
+            String fileName = "Cover-intro.png";
+            for (Path base : IMAGE_BASES) {
+                if (!Files.isDirectory(base)) continue;
+                Path p = base.resolve(fileName);
+                if (Files.exists(p)) {
+                    MENU_BG = new javax.swing.ImageIcon(p.toString()).getImage();
+                    return MENU_BG;
+                }
+            }
+            Path absolute = Paths.get("D:", "Disco", "Cursos", "UCompensar Estructuras de datos", "BlackJack", "src", "main", "java", "com", "mycompany", "blackjack3", "src", fileName);
+            if (Files.exists(absolute)) {
+                MENU_BG = new javax.swing.ImageIcon(absolute.toString()).getImage();
+            }
+            return MENU_BG;
         }
     }
 
