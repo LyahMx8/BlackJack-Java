@@ -171,7 +171,7 @@ public class BlackJack3 {
             try {
                 System.out.print("\n¿Cuántos jugadores? (1-3): ");
                 numJugadores = Integer.parseInt(scanner.nextLine());
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
                 System.out.println("Ingresa un número válido.");
             }
         }

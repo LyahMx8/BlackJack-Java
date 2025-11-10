@@ -37,4 +37,23 @@ class GameHistory {
             history.encolar(resultado);
         }
     }
+
+    public List<String> getLast(int limite) {
+        List<String> result = new ArrayList<>();
+        if (history.estaVacia()) {
+            return result;
+        }
+        List<String> tempLista = new ArrayList<>();
+        while (!history.estaVacia()) {
+            tempLista.add(history.desencolar());
+        }
+        int inicio = Math.max(0, tempLista.size() - limite);
+        for (int i = inicio; i < tempLista.size(); i++) {
+            result.add(tempLista.get(i));
+        }
+        for (String r : tempLista) {
+            history.encolar(r);
+        }
+        return result;
+    }
 }
